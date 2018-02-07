@@ -148,17 +148,6 @@ Object _serializeObject(obj, depth, exclude, fieldName) {
   return result;
 }
 
-Map _uIdFromClassCache = {};
-
-String _getUIdAttrFromClass(ClassMirror cm) =>
-    (_uIdFromClassCache
-      ..putIfAbsent(cm, () =>
-        cm.fields.values
-            .firstWhere((v) => v.annotations?.contains((a) => a == uId) ?? false, orElse: () => null)
-            ?.name ?? 'id'
-      )
-    )[cm];
-
 /// Checks the DeclarationMirror [variable] for annotations and adds
 /// the value to the [result] map. If there's no [SerializedName] annotation
 /// with a different name set it will use the name of [symbol].
@@ -170,28 +159,21 @@ void _pushField(String fieldName, DeclarationMirror variable, SerializableMap ob
   Object value = obj[fieldName];
 //  _serLog.finer("Start serializing field: ${fieldName}");
 
+  fieldName = _getFieldNameFromDeclaration(variable);
   // check if there is a DartsonProperty annotation
-  SerializedName prop = variable.annotations?.firstWhere((a) => a is SerializedName, orElse: () => null);
-//  _serLog.finest("Property Annotation: ${prop}");
-
-  if (prop?.name != null) {
-//    _serLog.finer("Field renamed to: ${prop.name}");
-    fieldName = prop.name;
-  }
-
 
 //  _serLog.finer("depth: $depth");
 
   //If the value is not null and the annotation @ignore is not on variable declaration
-  if (value != null && !(variable.annotations?.any((a) => a is _Ignore) ?? false)
+  if (value != null && !_getIsIgnoredFromDeclaration(variable)
       // And exclude is pressent
       && (exclude == null
-        // or exclude is Map (we are excluding nested attribute)
-        || exclude is Map
-        // or exclude is String and fieldName distinct of exclude (we exclude this attribute)
-        || exclude is String && fieldName != exclude
-        // or exclude is List and exclude contains this fieldName (we exclude this attribute)
-        || exclude is List && !exclude.contains(fieldName))) {
+          // or exclude is Map (we are excluding nested attribute)
+          || exclude is Map
+          // or exclude is String and fieldName distinct of exclude (we exclude this attribute)
+          || exclude is String && fieldName != exclude
+          // or exclude is List and exclude contains this fieldName (we exclude this attribute)
+          || exclude is List && !exclude.contains(fieldName))) {
 
 //    _serLog.finer("Serializing field: ${fieldName}");
 
@@ -205,7 +187,7 @@ void _pushField(String fieldName, DeclarationMirror variable, SerializableMap ob
 /// Cheks if the value is not Simple (primitive, datetime, List, or Map)
 /// and if the annotation [Cyclical] is not over the class of the object
 _isCiclical(ClassMirror cm) =>
-  cm.annotations?.any((a) => a is _Cyclical) ?? false;
+    cm.annotations?.any((a) => a is _Cyclical) ?? false;
 
 /// Gets the next depth from the actual depth for the nested attribute with name [fieldName]
 _getNextDepth(depth, String fieldName) {
@@ -220,7 +202,7 @@ _getNextDepth(depth, String fieldName) {
 _getNext(excludeOrDepth, String fieldName) {
   if (excludeOrDepth is List) {
     excludeOrDepth = excludeOrDepth.firstWhere((e) => //
-        e == fieldName || e is Map && e.keys.contains(fieldName), orElse: () => null);
+    e == fieldName || e is Map && e.keys.contains(fieldName), orElse: () => null);
   }
 
   if(excludeOrDepth is Map) return excludeOrDepth[fieldName];
