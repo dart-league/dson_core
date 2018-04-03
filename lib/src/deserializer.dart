@@ -290,7 +290,7 @@ Object _initiateClass(Type type, [filler]) {
     positionalParams = [];
     namedParameters = {};
     for (var p in constructor.parameters) {
-      if (!p.isRequired) {
+      if (!p.isRequired && p.isFinal) {
         onlyOptionalOrImmutable = true;
       } else {
         var fieldDecl = classMirror.fields[p.name];
