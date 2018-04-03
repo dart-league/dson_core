@@ -21,9 +21,10 @@ String _getUIdAttrFromClass(ClassMirror cm) =>
         ?.name ?? 'id'
     );
 
-Map<DeclarationMirror, bool> _isIgnoredChace = {};
-
+/// Checks if the annotation [ignored] is over the [declaration]
 bool _getIsIgnoredFromDeclaration(DeclarationMirror declaration) =>
-    declaration.annotations == null
-        ? false
-        : _isIgnoredChace.putIfAbsent(declaration, () => declaration.annotations.any((a) => a is _Ignore));
+    declaration.annotations?.any((a) => a is _Ignore) ?? false;
+
+/// Cheks if the annotation [Cyclical] is not over the class of the object
+_isCyclical(ClassMirror cm) =>
+    cm.annotations?.any((a) => a is _Cyclical) ?? false;

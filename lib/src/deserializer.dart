@@ -23,7 +23,7 @@ part of dson;
 ///
 /// Throws [FormatException] if the [jsonStr] is not valid JSON text.
 dynamic fromJson(String jsonStr, /*Type | List<Type> | List<List<Type>>*/ type) {
-  var filler = JSON.decode(jsonStr);
+  var filler = json.decode(jsonStr);
   return _convertValue(type, filler);
 }
 
@@ -36,7 +36,7 @@ dynamic fromJson(String jsonStr, /*Type | List<Type> | List<List<Type>>*/ type) 
 ///    have a constructor without or only optional arguments.
 ///  Throws [IncorrectTypeTransform] if json data types doesn't match.
 ///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-@deprecated
+@Deprecated('Use `fromJson(jsonStr, [List, YourType])` instead.')
 List fromJsonList(String jsonStr, Type clazz) {
   List returnList = [];
   List filler = JSON.decode(jsonStr);
@@ -60,7 +60,7 @@ List fromJsonList(String jsonStr, Type clazz) {
 ///    have a constructor without or only optional arguments.
 ///  Throws [IncorrectTypeTransform] if json data types doesn't match.
 ///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-@deprecated
+@Deprecated('Use `fromJson(jsonStr, [Map, [KeyType, ValueType]])` instead.')
 Map fromJsonMap(String jsonStr, Type clazz) {
   Map returnMap = {};
   Map filler = JSON.decode(jsonStr);
@@ -106,7 +106,7 @@ dynamic fromMap(Object dataObject, /*Type | List<Type> | List<List<Type>>*/ type
 ///    have a constructor without or only optional arguments.
 ///  Throws [IncorrectTypeTransform] if json data types doesn't match.
 ///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-@deprecated
+@Deprecated('Use `fromMap(jsonStr, [List, YourType])` instead.')
 List<T> fromMapList<T extends Object>(List<Map> dataMap, Type clazz) {
   var returnList = <T>[];
   dataMap.forEach((item) {

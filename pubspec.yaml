@@ -1,12 +1,12 @@
 name: dson_core
-version: 0.13.0
+version: 0.13.1
 author: Luis Vargas <luisvargastijerino@gmail.com>
 description: Convert Objects to Json and Json to Objects
 homepage: https://github.com/luisvt/dson_core
 environment:
   sdk: '>=1.8.0 <2.0.0'
 dependencies:
-  source_gen: ^0.7.0
+  source_gen: ^0.8.0
   build: ^0.12.0
   analyzer: ^0.31.0
   logging: ^0.11.0

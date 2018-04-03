@@ -24,7 +24,7 @@ String toJson(object, {bool parseString: false, depth, exclude}) {
 
   if (!parseString && object is String) return object;
 
-  var result = JSON.encode(objectToSerializable(object, depth: depth, exclude: exclude));
+  var result = json.encode(objectToSerializable(object, depth: depth, exclude: exclude));
 
   _serializedStack.clear();
 
@@ -122,7 +122,7 @@ Object _serializeObject(obj, depth, exclude, fieldName) {
 
     var publicVariables = classMirror.fields;
     depth = _getNextDepth(depth, fieldName);
-    if (depth != null || !_isCiclical(classMirror) || fieldName == null) {
+    if (depth != null || !_isCyclical(classMirror) || fieldName == null) {
       publicVariables.forEach((fieldName, decl) {
         if(!fieldName.startsWith('_')) _pushField(fieldName, decl, obj, result, depth, exclude);
       });
@@ -130,7 +130,7 @@ Object _serializeObject(obj, depth, exclude, fieldName) {
       _serializedStack[obj] = result;
     }
 
-    if (_isCiclical(classMirror)) {
+    if (_isCyclical(classMirror)) {
       var uIdField = _getUIdAttrFromClass(classMirror);
       if (publicVariables[uIdField] == null) {
         result['hashcode'] = obj.hashCode;
@@ -183,11 +183,6 @@ void _pushField(String fieldName, DeclarationMirror variable, SerializableMap ob
         fieldName: fieldName);
   }
 }
-
-/// Cheks if the value is not Simple (primitive, datetime, List, or Map)
-/// and if the annotation [Cyclical] is not over the class of the object
-_isCiclical(ClassMirror cm) =>
-    cm.annotations?.any((a) => a is _Cyclical) ?? false;
 
 /// Gets the next depth from the actual depth for the nested attribute with name [fieldName]
 _getNextDepth(depth, String fieldName) {
