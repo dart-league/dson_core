@@ -162,7 +162,6 @@ bool isSimpleType(Type type) =>
       subType = types[1],
       resultList = [];
 
-  // ignore: undefined_method
   fillerList.forEach((item) => resultList.add(_convertValue(subType, item, "@LIST_ITEM")));
 
 //  _desLog.fine("Created generic list: ${resultList}");
