@@ -156,18 +156,17 @@ bool isSimpleType(Type type) =>
     isPrimitiveType(type) || type == List || type == Map || type == Set;
 
 /// Converts a list of objects to a list with a Class.
-/* List | Set */
-_convertGenericListOrSet(types, List fillerList) {
+/* List | Set */ _convertGenericListOrSet(types, List fillerList) {
 //  _desLog.fine('Converting generic list');
   var type = types[0],
-      subType = types[1];
-  var resultList = type == List ? [] : new Set();
+      subType = types[1],
+      resultList = [];
 
   // ignore: undefined_method
   fillerList.forEach((item) => resultList.add(_convertValue(subType, item, "@LIST_ITEM")));
 
 //  _desLog.fine("Created generic list: ${resultList}");
-  return resultList;
+  return type == List ? resultList : resultList.toSet();
 }
 
 Map _convertGenericMap(List subTypes, Map fillerMap) {
