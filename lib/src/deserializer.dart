@@ -39,7 +39,7 @@ dynamic fromJson(String jsonStr, /*Type | List<Type> | List<List<Type>>*/ type) 
 @Deprecated('Use `fromJson(jsonStr, [List, YourType])` instead.')
 List fromJsonList(String jsonStr, Type clazz) {
   List returnList = [];
-  List filler = JSON.decode(jsonStr);
+  List filler = json.decode(jsonStr);
   if ([int, num, double, bool, String].any((v) => v == clazz)) {
     return filler;
   }
@@ -63,7 +63,7 @@ List fromJsonList(String jsonStr, Type clazz) {
 @Deprecated('Use `fromJson(jsonStr, [Map, [KeyType, ValueType]])` instead.')
 Map fromJsonMap(String jsonStr, Type clazz) {
   Map returnMap = {};
-  Map filler = JSON.decode(jsonStr);
+  Map filler = json.decode(jsonStr);
   if ([int, num, double, bool, String].any((v) => v == clazz)) {
     return filler;
   }
