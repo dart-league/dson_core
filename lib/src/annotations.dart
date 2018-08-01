@@ -22,17 +22,6 @@ class IgnoreIf extends Annotation {
   const IgnoreIf(this.ignoreIfFunction);
 }
 
-/**
- * Annotation class to describe properties of a class member.
- */
-class SerializedName extends Annotation {
-  final String name;
-  
-  const SerializedName(this.name);
-  
-  String toString() => "DartsonProperty: Name: ${name}";
-}
-
 ///this annotation describes if the objects contains cyclical reference to other objects
 const cyclical = const _Cyclical();
 
