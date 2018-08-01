@@ -1,3 +1,10 @@
+## 0.14.0
+
+- upgrade `sourge_gen` to version `^0.9.0`
+- upgrade `analyzer` to version `^0.32.0`
+- upgrade `built_mirrors_core` to version `^0.9.0`
+- upgrade `serializable_core` to version `^0.10.0`
+
 ## 0.13.3
 
 - fix https://github.com/drails-dart/dson/issues/34
