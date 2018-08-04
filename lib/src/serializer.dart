@@ -159,7 +159,7 @@ void _pushField(String fieldName, DeclarationMirror variable, SerializableMap ob
   Object value = obj[fieldName];
 //  _serLog.finer("Start serializing field: ${fieldName}");
 
-  fieldName = _getFieldNameFromDeclaration(variable);
+  fieldName = variable.name;
   // check if there is a DartsonProperty annotation
 
 //  _serLog.finer("depth: $depth");

@@ -22,59 +22,10 @@ part of dson;
 /// Throws [IncorrectTypeTransform] if json data types doesn't match.
 ///
 /// Throws [FormatException] if the [jsonStr] is not valid JSON text.
-dynamic fromJson(String jsonStr, /*Type | List<Type> | List<List<Type>>*/ type) {
+dynamic fromJson(String jsonStr, /*Type | Function | List<Type | Function | List<Type | Function | ...>>*/ type) {
   var filler = json.decode(jsonStr);
   return _convertValue(type, filler);
 }
-
-/// This function is deprecated. Use `fromJson(jsonStr, [List, YourType])` instead.
-///
-/// Creates a list with instances of [clazz] and puts the data of the parsed json
-/// of [jsonStr] into the instances.
-///   Returns A list of objects of [clazz].
-///  Throws [NoConstructorError] if [clazz] or Classes used inside [clazz] do not
-///    have a constructor without or only optional arguments.
-///  Throws [IncorrectTypeTransform] if json data types doesn't match.
-///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-@Deprecated('Use `fromJson(jsonStr, [List, YourType])` instead.')
-List fromJsonList(String jsonStr, Type clazz) {
-  List returnList = [];
-  List filler = json.decode(jsonStr);
-  if ([int, num, double, bool, String].any((v) => v == clazz)) {
-    return filler;
-  }
-  filler.forEach((item) {
-    Object obj = _convertValue(clazz, item);
-    returnList.add(obj);
-  });
-
-  return returnList;
-}
-
-/// This function is deprecated. Use `fromJson(jsonStr, [Map, [KeyType, ValueType]])` instead.
-///
-/// Creates a map with instances of [clazz] in values and puts the data of the parsed json
-/// of [jsonStr] into the instances.
-///   Returns A map of objects of [clazz].
-///  Throws [NoConstructorError] if [clazz] or Classes used inside [clazz] do not
-///    have a constructor without or only optional arguments.
-///  Throws [IncorrectTypeTransform] if json data types doesn't match.
-///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-@Deprecated('Use `fromJson(jsonStr, [Map, [KeyType, ValueType]])` instead.')
-Map fromJsonMap(String jsonStr, Type clazz) {
-  Map returnMap = {};
-  Map filler = json.decode(jsonStr);
-  if ([int, num, double, bool, String].any((v) => v == clazz)) {
-    return filler;
-  }
-  filler.keys.forEach((key) {
-    Object obj = _convertValue(clazz, filler[key]);
-    returnMap[key] = obj;
-  });
-
-  return returnMap;
-}
-
 
 /// Creates a new instance of [type] and maps the data of [dataObject] into it.
 ///
@@ -97,56 +48,6 @@ dynamic fromMap(Object dataObject, /*Type | List<Type> | List<List<Type>>*/ type
   return _convertValue(type, dataObject);
 }
 
-/// This function is deprecated. Use `fromMap(jsonStr, [List, YourType])` instead.
-///
-/// Creates a list with instances of [clazz] and maps the data of [dataMap] into
-/// each instance.
-///   Returns A list of objects of [clazz].
-///  Throws [NoConstructorError] if [clazz] or Classes used inside [clazz] do not
-///    have a constructor without or only optional arguments.
-///  Throws [IncorrectTypeTransform] if json data types doesn't match.
-///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-@Deprecated('Use `fromMap(jsonStr, [List, YourType])` instead.')
-List<T> fromMapList<T extends Object>(List<Map> dataMap, Type clazz) {
-  var returnList = <T>[];
-  dataMap.forEach((item) {
-    T obj = _convertValue(clazz, item) as T;
-    returnList.add(obj);
-  });
-
-  return returnList;
-}
-
-/// Fills an [object] with the data of [dataObject] and returns the [object].
-///  Throws [NoConstructorError] if [clazz] or Classes used inside [clazz] do not
-///    have a constructor without or only optional arguments.
-///  Throws [IncorrectTypeTransform] if json data types doesn't match.
-///  Throws [FormatException] if the [jsonStr] is not valid JSON text.
-dynamic fill(Map dataObject, Object object) {
-  return _fillObject(object, dataObject);
-}
-
-/// Puts the data of the [filler] into the object in [objMirror]
-///  Throws [IncorrectTypeTransform] if json data types doesn't match.
-Object _fillObject(SerializableMap obj, filler) {
-  var classMirror = reflectType(obj.runtimeType);
-
-  classMirror.setters.forEach((varName) {
-    DeclarationMirror decl = classMirror.fields[varName];
-    String fieldName = _getFieldNameFromDeclaration(decl);
-    var valueType = decl.type;
-
-//    _desLog.fine('Try to fill object with: ${fieldName}: ${filler[fieldName]}');
-
-    if (filler[fieldName] != null) {
-      obj[varName] = _convertValue(valueType, filler[fieldName], varName);
-    }
-  });
-
-//  _desLog.fine("Filled object completly: ${filler}");
-  return obj;
-}
-
 /// Checks if the [type] is either [bool], [String], [int], [num], [double], or [dynamic]
 bool isPrimitiveType(Type type) =>
     type == bool || type == String || type == int || type == num || type == double || type == dynamic;
@@ -156,27 +57,21 @@ bool isSimpleType(Type type) =>
     isPrimitiveType(type) || type == List || type == Map || type == Set;
 
 /// Converts a list of objects to a list with a Class.
-/* List | Set */ _convertGenericListOrSet(types, List fillerList) {
+/* List | Set */ _convertGenericListOrSet(receiver, subType, List fillerList) {
 //  _desLog.fine('Converting generic list');
-  var type = types[0],
-      subType = types[1],
-      resultList = [];
-
-  fillerList.forEach((item) => resultList.add(_convertValue(subType, item, "@LIST_ITEM")));
+  fillerList.forEach((item) => receiver.add(_convertValue(subType, item, "@LIST_ITEM")));
 
 //  _desLog.fine("Created generic list: ${resultList}");
-  return type == List ? resultList : resultList.toSet();
+//  return type == List ? resultList : resultList.toSet();
+  return receiver;
 }
 
-Map _convertGenericMap(List subTypes, Map fillerMap) {
+Map _convertGenericMap(resultMap, List subTypes, Map fillerMap) {
 //  _desLog.fine('Converting generic map');
-  var keyType = subTypes[0];
-  var itemType = subTypes[1];
-  Map resultMap = {};
 
   fillerMap.forEach((key, value) {
-    var keyItem = _convertValue(keyType, key, "@MAP_KEY");
-    var valueItem = _convertValue(itemType, value, "@MAP_VALUE");
+    var keyItem = _convertValue(subTypes[0], key, "@MAP_KEY");
+    var valueItem = _convertValue(subTypes[1], value, "@MAP_VALUE");
     resultMap[keyItem] = valueItem;
 //    _desLog.fine("Added item ${valueItem} to map key: ${keyItem}");
   });
@@ -195,12 +90,17 @@ Object _convertValue(/*Type | List<Type>*/ valueType, Object value, [String key 
   // if valueType is `List<SomeClass> or Map<SomeClass0, SomeClass1>`
   if (valueType is List) {
 //    _desLog.fine('Handle generic');
+    var receiver;
+    if(valueType[0] is Function) {
+      receiver = valueType[0]();
+    }
     // handle generic lists
-    if (valueType[0] == List || valueType[0] == Set) {
-      return _convertGenericListOrSet(valueType, value);
-    } else if (valueType[0] == Map) {
+    if (receiver is List || receiver is Set) {
+      return _convertGenericListOrSet(receiver, valueType[1], value);
+//      return value;
+    } else if (receiver is Map) {
       // handle generic maps
-      return _convertGenericMap(valueType[1], value);
+      return _convertGenericMap(receiver, valueType[1], value);
     }
     return null;
   } else if (valueType == String) {
@@ -294,7 +194,7 @@ Object _initiateClass(Type type, [filler]) {
         var fieldDecl = classMirror.fields[p.name];
 
         if (fieldDecl?.isFinal == true) {
-          var pName = _getFieldNameFromDeclaration(fieldDecl);
+          var pName = fieldDecl.name;
 
 //              _desLog.fine('Try to pass parameter: ${parameterName}: ${filler[parameterName]}');
 
@@ -315,9 +215,9 @@ Object _initiateClass(Type type, [filler]) {
   }
 
 //    _desLog.fine("Found constructor: \"${constrMethod}\"");
-  Object obj = constructor(positionalParams, namedParameters);
+  SerializableMap obj = constructor(positionalParams, namedParameters);
   if (classMirror.setters == null) return obj;
 //    _desLog.fine("Created instance of type: ${classMirror.name}");
 
-  return _fillObject(obj, filler);
+  return obj..fromMap(filler);
 }
