@@ -179,39 +179,16 @@ Object _initiateClass(Type type, [filler]) {
     return classMirror.values[filler];
   }
 
-  List positionalParams;
-  Map<String, dynamic> namedParameters;
-
   var constructor = classMirror.constructors[''];
-  if (constructor.parameters?.isNotEmpty == true) {
-    bool onlyOptionalOrImmutable = false;
-    positionalParams = [];
-    namedParameters = {};
-    for (var p in constructor.parameters) {
-      if (!p.isRequired && p.isFinal) {
-        onlyOptionalOrImmutable = true;
-      } else {
-        var fieldDecl = classMirror.fields[p.name];
 
-        if (fieldDecl?.isFinal == true) {
-          var pName = fieldDecl.name;
+  List positionalParams = List(constructor.positionalParameters?.length ?? 0);
+  Map<String, dynamic> namedParameters = {};
 
-//              _desLog.fine('Try to pass parameter: ${parameterName}: ${filler[parameterName]}');
-
-          if (p.isNamed) {
-            namedParameters[p.name] = filler[pName];
-          } else {
-            positionalParams.add(filler[pName]);
-          }
-          onlyOptionalOrImmutable = true;
-        }
-      }
-    };
-
-    if (!onlyOptionalOrImmutable) {
-//    _desLog.fine("No constructor found.");
-      throw new NoConstructorError(classMirror);
-    }
+  if (constructor.parameters.length > 0
+      && constructor.parameters?.every((p) => classMirror.fields[p.name]?.isFinal == true) == true) {
+    var i = 0;
+    constructor.positionalParameters?.forEach((p) => positionalParams[i++] = filler[p.name]);
+    constructor.namedParameters?.forEach((name, p) => namedParameters[name] = filler[name]);
   }
 
 //    _desLog.fine("Found constructor: \"${constrMethod}\"");
