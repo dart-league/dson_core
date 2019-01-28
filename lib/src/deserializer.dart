@@ -11,10 +11,23 @@ part of dson;
 ///     Person person = fromJson('{"id": 1, "name": "John Doe"}', Person);
 ///
 ///     // List conversion
-///     List<Person> persons = fromJson('[{"id": 1, "name": "John Doe"}]', [List, Person]);
+///     List<Person> persons = fromJson('[{"id": 1, "name": "John Doe"}]', [() => List<Person>(), Person]);
 ///
 ///     // Map conversion
-///     Map<String, Person> personsMap = fromJson('{"person1": {"id": 1, "name": "John Doe"}}', [Map, [String, Person]]);
+///     Map<String, Person> personsMap = fromJson('{"person1": {"id": 1, "name": "John Doe"}}',
+///                                               [() => Map<String, Person>(), [String, Person]]);
+///
+///     // Generics conversion
+///     Page<Person> page = fromJson('{
+///       "number": 1,
+///       "size": 3,
+///       "total": 100,
+///       "items": [
+///         {"id": 1, "name": "person1"},
+///         {"id": 2, "name": "person2"},
+///         {"id": 3, "name": "person3"}
+///       ]
+///     }', [() => Page<Person>(), {'items': [() => List<Person>(), Person]}]);
 ///
 /// Throws [NoConstructorError] if [type] or Classes used inside [type] do not
 /// have a constructor without or only optional arguments.
@@ -35,10 +48,22 @@ dynamic fromJson(String jsonStr, /*Type | Function | List<Type | Function | List
 ///     Person person = fromMap({"id": 1, "name": "John Doe"}, Person);
 ///
 ///     // List conversion
-///     List<Person> persons = fromMap([{"id": 1, "name": "John Doe"}], [List, Person]);
+///     List<Person> persons = fromMap([{"id": 1, "name": "John Doe"}], [() => List<Person>, Person]);
 ///
 ///     // Map conversion
-///     Map<String, Person> personsMap = fromMap({"person1": {"id": 1, "name": "John Doe"}}, [Map, [String, Person]]);
+///     Map<String, Person> personsMap = fromMap({"person1": {"id": 1, "name": "John Doe"}}, [() => Map<String, Person>(), [String, Person]]);
+///
+///     // Generic conversion
+///     Page<Person> page = fromMap({
+///       "number": 1,
+///       "size": 3,
+///       "total": 100,
+///       "items": [
+///         {"id": 1, "name": "person1"},
+///         {"id": 2, "name": "person2"},
+///         {"id": 3, "name": "person3"}
+///       ]
+///     }, [() => Page<Person>(), {'items': [() => List<Person>(), Person]}]);
 ///
 /// Throws [NoConstructorError] if [type] or Classes used inside [type] do not
 /// have a constructor without or only optional arguments.
@@ -62,7 +87,6 @@ bool isSimpleType(Type type) =>
   fillerList.forEach((item) => receiver.add(_convertValue(subType, item, "@LIST_ITEM")));
 
 //  _desLog.fine("Created generic list: ${resultList}");
-//  return type == List ? resultList : resultList.toSet();
   return receiver;
 }
 
@@ -80,6 +104,18 @@ Map _convertGenericMap(resultMap, List subTypes, Map fillerMap) {
   return resultMap;
 }
 
+_convertGenericT(receiver, subType, Map fillerMap) {
+  fillerMap.forEach((key, value) {
+    if (subType is Map && subType[key] != null) {
+      receiver[key] = _convertValue(subType[key], value);
+    } else {
+      receiver[key] = value;
+    }
+  });
+
+  return receiver;
+}
+
 /// Transforms the value of a field [key] to the correct value.
 ///  returns Deserialized value
 ///  Throws [IncorrectTypeTransform] if json data types doesn't match.
@@ -87,22 +123,22 @@ Map _convertGenericMap(resultMap, List subTypes, Map fillerMap) {
 Object _convertValue(/*Type | List<Type>*/ valueType, Object value, [String key = '@OBJECT']) {
 //  _desLog.fine(() => "Converting (\"${key}\": $value) to ${valueType}");
 
-  // if valueType is `List<SomeClass> or Map<SomeClass0, SomeClass1>`
+  // if valueType is `List<SomeClass>` or `Map<SomeClass0, SomeClass1>`
   if (valueType is List) {
 //    _desLog.fine('Handle generic');
     var receiver;
     if(valueType[0] is Function) {
       receiver = valueType[0]();
     }
-    // handle generic lists
     if (receiver is List || receiver is Set) {
+      // handle generic lists
       return _convertGenericListOrSet(receiver, valueType[1], value);
-//      return value;
-    } else if (receiver is Map) {
+    } else if (receiver is! SerializableMap && receiver is Map) {
       // handle generic maps
       return _convertGenericMap(receiver, valueType[1], value);
     }
-    return null;
+    // handle generics
+    return _convertGenericT(receiver, valueType[1], value);
   } else if (valueType == String) {
     if (value is String) {
       return value;

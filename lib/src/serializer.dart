@@ -17,7 +17,7 @@ bool isSimple(value) => isPrimitive(value) || value is DateTime || value is List
 /// 
 /// Parameters:
 /// 
-/// [depth] :  determines how deep is going to be the serialization and to avoid cyclical object reference stack overflow. 
+/// [depth] :  determines how deep is going to be the serialization and avoids stack overflow produced by cyclical object references.
 /// [exclude] : exclude some attributes. It could be [String], [Map], or [List]
 String toJson(object, {bool parseString: false, depth, exclude}) {
 //  _serLog.fine("Start serializing");
@@ -36,7 +36,7 @@ String toJson(object, {bool parseString: false, depth, exclude}) {
 ///
 /// Parameters:
 ///
-/// * [depth] :  determines how deep is going to be the serialization and to avoid cyclical object reference stack overflow.
+/// * [depth] :  determines how deep is going to be the serialization and avoids stack overflow produced by cyclical object references.
 /// * [exclude] : exclude some attributes. It could be [String], [Map], or [List]
 Map toMap(object, {depth, exclude, String fieldName}) =>
     objectToSerializable(object, depth: depth, exclude: exclude);
@@ -107,8 +107,7 @@ Map _serializeMap(Map map, depth, exclude, String fieldName) {
 
 /// Runs through the Object keys by using a ClassMirror.
 Object _serializeObject(obj, depth, exclude, fieldName) {
-//  InstanceMirror instMirror = serializable.reflect(obj);
-  ClassMirror classMirror = reflectType(obj.runtimeType);
+  var classMirror = reflect(obj);
 //  _serLog.fine("Serializing class: ${classMirror.name}");
 
   if(classMirror.isEnum) {
