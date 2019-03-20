@@ -123,6 +123,8 @@ _convertGenericT(receiver, subType, Map fillerMap) {
 Object _convertValue(/*Type | List<Type>*/ valueType, Object value, [String key = '@OBJECT']) {
 //  _desLog.fine(() => "Converting (\"${key}\": $value) to ${valueType}");
 
+  if (value == null) return null;
+
   // if valueType is `List<SomeClass>` or `Map<SomeClass0, SomeClass1>`
   if (valueType is List) {
 //    _desLog.fine('Handle generic');

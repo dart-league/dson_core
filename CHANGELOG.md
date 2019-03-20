@@ -1,3 +1,7 @@
+## 0.15.4
+
+- fix set null values to attributes (fixes: #45)
+
 ## 0.15.3
 
 - Enhance serialization of generics
